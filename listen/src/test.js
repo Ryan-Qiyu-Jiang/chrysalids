@@ -12,6 +12,8 @@ const speaker = new Speaker({
     sampleRate: 44100     
   });
   const url = 'https://youtu.be/2ZIpFytCSVc';
+// https://www.youtube.com/watch?v=YnREVb33zx0
+// https://youtu.be/9qMMv0jut2k
 
   let p;
     p = stream(url);

@@ -13,6 +13,7 @@ const server = {
     host : process.env.CONDUCTOR_HOST || 'localhost',
     port : process.env.CONDUCTOR_PORT || '3000'
 };
+const user_name = process.env.C_NAME || '';
 
 let late_ws_ref = null;
 const wait_for_others = true;
@@ -42,6 +43,7 @@ const soda_playlist = [
     'https://youtu.be/2L5kE1-NOVc',
 ];
 
+// resolve user request
 function resolve_cmd(cmd, ps, ws) {
     if(cmd.startsWith('add')) {
         const url = cmd.substring(4);
@@ -53,6 +55,8 @@ function resolve_cmd(cmd, ps, ws) {
     }else if(cmd.startsWith('play soda')) {
         for(let f=0;f<soda_playlist.length;f++) {ws.send(`add;${soda_playlist[f]}`);}
         console.log("sure");
+    }else if (cmd == 'crowd?') {
+        ws.send('vcrowd');
     }else if (cmd == 'queue?' || cmd == 'ls') {
         ws.send('vget');
     }else if (cmd == 'skip') {
@@ -66,6 +70,15 @@ function resolve_cmd(cmd, ps, ws) {
     }else if(cmd.startsWith('http')) {
         ws.send(`add;${cmd}`);
         console.log("added!");
+    }else if(cmd == 'help') {
+        const help = `Command List:
+    { youtube song url },
+    add { youtube song url },
+    play { 'coffee' || 'soda' },
+    crowd?,
+    queue?
+    `;
+        console.log(help);
     }else {
         console.log("try again?", chalk.red.bold('WHAT?'));
     }
@@ -73,13 +86,15 @@ function resolve_cmd(cmd, ps, ws) {
     return false, {ok:true};
 }
 
+// resolve response from conductor
 function resolve_res(res, ps, ws) {
     if(res.startsWith('sync;')) {
         ps.send(res);
     }else if(res.startsWith('queue;')) {
         ps.send(res);
     }else if(res.startsWith('joined;')) {
-        console.log("someone joined!");
+        const name = res.substring(7) || 'someone';
+        console.log(`${chalk.magenta.bold(name)} joined!`);
     }else if (res.startsWith('init;')) {
         const welcome_json = res.substring(5);
         try{
@@ -106,11 +121,39 @@ function resolve_res(res, ps, ws) {
         ps.send('skip');
     }else if (res.startsWith('vqueue;')) {
         ps.send(`describe;${res.substring(7)}`);
+    }else if (res.startsWith('vcrowd;')) {
+        res = res.substring(7);
+        const res_arr = res.split(';');
+        if(res_arr[res_arr.length-1] == '') {
+            res_arr.pop();
+        }
+        try {
+            const lurkers = parseInt(res_arr[0]); // num nameless
+            console.log(`${chalk.magenta.bold('Crowd:')}`);
+            if(res_arr.length > 1) {
+                for(let i=1; i < res_arr.length; i++) {
+                    console.log(`   ${res_arr[i]}`);
+                }
+            }
+            if(lurkers>0) {
+                if(lurkers == 1) {
+                    console.log(`${(res_arr.length > 1)? 'and ' : ''}someone is lurking...`);
+                }else {
+                    console.log(`${res_arr.length > 1? 'and ' : ''}there are ${lurkers} lurkers...`);
+                }
+            }
+        }catch(err) {
+            console.log(`can't parse ${num_nameless}`);
+        }
+    }else if (res.startsWith('left;')) {
+        const name = res.substring(5);
+        console.log(`${name? name : 'someone'} left`);
     }else {
         console.log(`what is: ${res}`);
     }
 }
 
+// resolve reqs from listen child ps
 function resolve_child(cmd, ps) {
     if(cmd.startsWith('sync;')) {
         if(late_ws_ref){
@@ -148,7 +191,7 @@ function main(options) {
         }
     });
 
-    setTimeout(()=>{}, 100000000000);
+    setTimeout(()=>{}, 100000000000000);
 }
 
 function spawn_listen(verbose) {
@@ -171,6 +214,7 @@ function connect(server, ps) {
     const ws = new WS(`ws://${server.host}:${server.port}`);
     ws.on('open', function () {
         logger.verbose('connected');
+        ws.send(`name;${user_name}`);
     });
 
     ws.on('message', function (res) {
