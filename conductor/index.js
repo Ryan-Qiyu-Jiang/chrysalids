@@ -214,7 +214,6 @@ function main() {
         });
         ws.on('close', (code, reason) => {
             console.log(`user ${ws.id} left because: ${reason}`);
-            console.log(clients[ws.id]);
             wss.others_broadcast(`left;${clients[ws.id].user_name || ''}`, ws);
             clients[ws.id] = null;
         });
