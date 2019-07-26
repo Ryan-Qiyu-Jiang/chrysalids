@@ -30,7 +30,11 @@ const coffee_playlist = [
     'https://youtu.be/0p_B-9y8Tws',
     'https://youtu.be/UG9jS1j-skE',
     'https://youtu.be/LueM9tEu2wI',
-    'https://youtu.be/RQSiChppVSM'
+    'https://youtu.be/RQSiChppVSM',
+    'https://youtu.be/Wi8Y2GQxOfg',
+    'https://youtu.be/qVdPh2cBTN0',
+    'https://youtu.be/CSoIT3dC58k',
+    'https://youtu.be/Qzc_aX8c8g4'
 ];
 
 const soda_playlist = [
