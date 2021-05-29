@@ -22,7 +22,7 @@
     "get-youtube-title": "^1.0.0",
     "lame": "^1.2.4",
     "speaker": "^0.4.2",
-    "ws": "^7.0.0",
+    "ws": "^7.4.6",
     "youtube-audio-stream": "^0.3.0"
   },
   "devDependencies": {},
